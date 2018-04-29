@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create New Letter</title>
+</head>
+<body>
+<button id="create-letter-btn" onclick="createNew()">Create New Letter</button>
+<label for="edit-letter">Edit a Letter</label> <input type="file" id="edit-letter" onchange="loadWord()">
+<div id="create-div" hidden="hidden">
+    <label for="spline-list">Select a spline to edit</label><select id="spline-list"></select>
+    <button id="add-spline-btn" onclick="addSpline()">Add Spline</button>
+    <button id="rem-spline-btn" onclick="removeSpline()">Remove Spline</button>
+    <button id="edit-spline-btn" onclick="selectSpline()">Edit Spline</button>
+    <label for="point-list">Select a point to move</label><select id="point-list"></select>
+    <button id="add-point-btn" onclick="addPoint()">Add Point</button>
+    <button id="rem-point-btn" onclick="removePoint()">Remove Point</button>
+    <button id="edit-point-btn" onclick="selectPoint()">Edit Point</button>
+</div>
+<div id="save-cancel" hidden="hidden">
+    <button id="save-btn" onclick="saveLetter()">Save</button>
+    <button id="cancel" onclick="cancelProcess()">Cancel</button>
+</div>
+
+<script type="text/javascript" src="../lib/webgl-utils.js"></script>
+<script type="text/javascript" src="../lib/webgl-debug.js"></script>
+<script type="text/javascript" src="../lib/cuon-utils.js"></script>
+<script type="text/javascript" src="../lib/cuon-matrix.js"></script>
+</body>
+</html>
