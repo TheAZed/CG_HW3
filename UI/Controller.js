@@ -2,9 +2,12 @@
 var currentWord;
 var selectedSplineIndex;
 var selectedPointIndex;
+var splineList;
+var pointList;
 
 function main() {
-
+    splineList = document.getElementById("spline-list");
+    pointList = document.getElementById("point-list");
 }
 
 function createNew() {
@@ -50,20 +53,31 @@ function saveLetter() {
 
 function cancelProcess() {
     currentWord = [];
+    while (splineList.options.length > 0)
+        splineList.remove(0);
+    while (pointList.options.length > 0)
+        pointList.remove(0);
     document.getElementById("save-cancel").setAttribute("hidden", "hidden");
     document.getElementById("create-div").setAttribute("hidden", "hidden");
+    selectedSplineIndex = -1;
+    selectedPointIndex = -1;
 }
 
 function addSpline() {
-
+    selectedSplineIndex = currentWord.length;
+    currentWord[splineList.options.length] = [];
+    splineList.options[splineList.options.length] = new Option("spline no." + selectedSplineIndex, "spl"+selectedSplineIndex, false, true);
 }
 
 function removeSpline() {
-
+    if(splineList.options.length > 0) {
+        splineList.remove(selectedSplineIndex);
+        currentWord.splice(selectedSplineIndex, selectedSplineIndex + 1);
+    }
 }
 
 function selectSpline() {
-
+    selectedSplineIndex = splineList.selectedIndex;
 }
 
 function addPoint() {

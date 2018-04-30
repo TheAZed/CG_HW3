@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <title>Create New Letter</title>
 </head>
-<body>
-<button id="create-letter-btn" onclick="createNew()">Create New Letter</button>
-<label for="edit-letter">Edit a Letter</label> <input type="file" id="edit-letter" onchange="loadWord()">
+<body onload="main()">
+Spline Type:
+<input type="radio" name="type" value="bezier" id="bezier-type" onchange="cancelProcess()"> Bezier
+<input type="radio" name="type" value="b-spline" id="b-spline-type" onchange="cancelProcess()"> B-Spline<br>
+<button id="create-letter-btn" onclick="createNew()">Create New Letter</button><br>
+<label for="edit-letter">Edit a Letter:</label> <input type="file" id="edit-letter" onchange="loadWord()">
 <div id="create-div" hidden>
     <label for="letter-name">Letter Name</label><input type="text" id="letter-name">
-    <label for="spline-list">Select a spline to edit</label><select id="spline-list"></select>
+    <label for="spline-list">Select a spline to edit</label><select id="spline-list" onchange="selectSpline()"></select>
     <button id="add-spline-btn" onclick="addSpline()">Add Spline</button>
     <button id="rem-spline-btn" onclick="removeSpline()">Remove Spline</button>
-    <button id="edit-spline-btn" onclick="selectSpline()">Edit Spline</button>
     <label for="point-list">Select a point to move</label><select id="point-list"></select>
     <button id="add-point-btn" onclick="addPoint()">Add Point</button>
     <button id="rem-point-btn" onclick="removePoint()">Remove Point</button>
