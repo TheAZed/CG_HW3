@@ -10,6 +10,7 @@ let pointNum;
 let splineType; //1 for bezier and 2 for b-spline
 
 function main() {
+    init();
     splineType = 1;
     splineList = document.getElementById("spline-list");
     pointList = document.getElementById("point-list");
@@ -32,9 +33,16 @@ function main() {
                     point.y -= moveStep;
                     break;
             }
-            console.log(point);
+            // console.log(point);
+            redraw(currentWord, selectedSplineIndex, selectedPointIndex); // After each movement the canvas should be redrawn
         }
     });
+    // // This part of code is to prevent arrow key scrolling in the window
+    window.addEventListener("keydown", function(e) {
+        if([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+            e.preventDefault();
+        }
+    }, false);
 }
 
 function createNew() {
@@ -60,7 +68,7 @@ function loadWord() {
             currentWord = JSON.parse(ev.target.result);
             if (!currentWord)
                 console.log("Not a valid JSON file!");
-            console.log(currentWord);
+            // console.log(currentWord);
             document.getElementById("letter-name").value = currentWord.name;
             let beType = document.getElementById("bezier-type");
             let bType = document.getElementById("b-spline-type");
@@ -68,10 +76,12 @@ function loadWord() {
             // bType.removeAttribute("checked");
             if(currentWord.type === "Bezier") {
                 beType.checked = true;
-                console.log("setting type to bezier");
+                splineType = 1;
             }
-            else
+            else{
                 bType.checked = true;
+                splineType = 2;
+            }
             reloadSplines();
             reloadPoints();
         };
@@ -160,10 +170,11 @@ function addPoint() {
         num = 3;
     for (i = 0; i < num; i++) {
         pointList.options[sp.points.length] = new Option("point no." + pointNum, "pn" + pointNum, false, true);
+        selectedPointIndex = sp.points.length;
         sp.points[sp.points.length] = new Point2D(0, 0);
         pointNum++;
     }
-
+    redraw(currentWord, selectedSplineIndex, selectedPointIndex); // we redraw the canvas each time a new point is created
 }
 
 function removePoint() {
@@ -177,11 +188,13 @@ function removePoint() {
         sp.points.splice(selectedPointIndex, 1);
         pointList.remove(selectedPointIndex);
     }
-
+    selectedPointIndex = 0;
+    redraw(currentWord, selectedSplineIndex, selectedPointIndex); // we redraw the canvas each time a point is deleted
 }
 
 function selectPoint() {
     selectedPointIndex = pointList.selectedIndex;
+    redraw(currentWord, selectedSplineIndex, selectedPointIndex); // we redraw the canvas each time a new point is selected (new spline selection also leads to a new point selection)
 }
 
 function reloadSplines() {
@@ -204,6 +217,7 @@ function reloadPoints() {
         pointNum++;
     }
     selectedPointIndex = pointNum - 1;
+    redraw(currentWord, selectedSplineIndex, selectedPointIndex);
 }
 
 class Letter {

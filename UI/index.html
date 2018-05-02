@@ -18,6 +18,7 @@ Spline Type:
     <label for="point-list">Select a point to move</label><select id="point-list" onchange="selectPoint()"></select>
     <button id="add-point-btn" onclick="addPoint()">Add Point</button>
     <button id="rem-point-btn" onclick="removePoint()">Remove Point</button><br>
+    Note: Click somewhere else after choosing your point(couldn't disable arrow key scrolling in lists)<br>
     <canvas id="webgl" width="400" height="400"></canvas>
 </div>
 <div id="save-cancel" hidden>
@@ -30,5 +31,6 @@ Spline Type:
 <script type="text/javascript" src="../lib/cuon-utils.js"></script>
 <script type="text/javascript" src="../lib/cuon-matrix.js"></script>
 <script type="text/javascript" src="Controller.js"></script>
+<script type="text/javascript" src="DrawAgent.js"></script>
 </body>
 </html>
