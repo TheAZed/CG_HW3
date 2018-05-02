@@ -6,8 +6,8 @@
 </head>
 <body onload="main()">
 Spline Type:
-<input type="radio" name="type" value="bezier" id="bezier-type" onchange="changeToBezier()"> Bezier
-<input type="radio" name="type" value="b-spline" id="b-spline-type" onchange="changeToB()"> B-Spline<br>
+<input type="radio" name="type" value="bezier" id="bezier-type" onchange="changeToBezier()"> <label for="bezier-type"> Bezier</label>
+<input type="radio" name="type" value="b-spline" id="b-spline-type" onchange="changeToB()"> <label for="b-spline-type">B-Spline</label> <br>
 <button id="create-letter-btn" onclick="createNew()">Create New Letter</button><br>
 <label for="edit-letter">Edit a Letter:</label> <input type="file" id="edit-letter" onchange="loadWord()">
 <div id="create-div" hidden>
@@ -17,7 +17,8 @@ Spline Type:
     <button id="rem-spline-btn" onclick="removeSpline()">Remove Spline</button>
     <label for="point-list">Select a point to move</label><select id="point-list" onchange="selectPoint()"></select>
     <button id="add-point-btn" onclick="addPoint()">Add Point</button>
-    <button id="rem-point-btn" onclick="removePoint()">Remove Point</button>
+    <button id="rem-point-btn" onclick="removePoint()">Remove Point</button><br>
+    <canvas id="webgl" width="400" height="400"></canvas>
 </div>
 <div id="save-cancel" hidden>
     <button id="save-btn" onclick="saveLetter()">Save</button>

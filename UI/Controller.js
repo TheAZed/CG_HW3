@@ -1,3 +1,5 @@
+const moveStep = 0.01;
+
 let currentWord;
 let selectedSplineIndex;
 let selectedPointIndex;
@@ -13,6 +15,26 @@ function main() {
     pointList = document.getElementById("point-list");
     splineNum = 0;
     pointNum = 0;
+    document.addEventListener('keydown', function (ev) {
+        if(currentWord && currentWord.splines[selectedSplineIndex] && currentWord.splines[selectedSplineIndex].points[selectedPointIndex]){
+            let point = currentWord.splines[selectedSplineIndex].points[selectedPointIndex];
+            switch (ev.keyCode){
+                case 37://left arrow key
+                    point.x -= moveStep;
+                    break;
+                case 39://right arrow key
+                    point.x += moveStep;
+                    break;
+                case 38:// up arrow key
+                    point.y += moveStep;
+                    break;
+                case 40://down arrow key
+                    point.y -= moveStep;
+                    break;
+            }
+            console.log(point);
+        }
+    });
 }
 
 function createNew() {
