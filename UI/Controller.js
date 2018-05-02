@@ -12,6 +12,7 @@ let splineType; //1 for bezier and 2 for b-spline
 function main() {
     init();
     splineType = 1;
+    document.getElementById("bezier-type").checked = true;
     splineList = document.getElementById("spline-list");
     pointList = document.getElementById("point-list");
     splineNum = 0;

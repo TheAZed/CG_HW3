@@ -6,7 +6,7 @@
 </head>
 <body onload="main()">
 Spline Type:
-<input type="radio" name="type" value="bezier" id="bezier-type" onchange="changeToBezier()"> <label for="bezier-type"> Bezier</label>
+<input type="radio" name="type" value="bezier" id="bezier-type" onchange="changeToBezier()" > <label for="bezier-type"> Bezier</label>
 <input type="radio" name="type" value="b-spline" id="b-spline-type" onchange="changeToB()"> <label for="b-spline-type">B-Spline</label> <br>
 <button id="create-letter-btn" onclick="createNew()">Create New Letter</button><br>
 <label for="edit-letter">Edit a Letter:</label> <input type="file" id="edit-letter" onchange="loadWord()">
