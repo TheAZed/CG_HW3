@@ -18,9 +18,9 @@ function main() {
     splineNum = 0;
     pointNum = 0;
     document.addEventListener('keydown', function (ev) {
-        if(currentWord && currentWord.splines[selectedSplineIndex] && currentWord.splines[selectedSplineIndex].points[selectedPointIndex]){
+        if (currentWord && currentWord.splines[selectedSplineIndex] && currentWord.splines[selectedSplineIndex].points[selectedPointIndex]) {
             let point = currentWord.splines[selectedSplineIndex].points[selectedPointIndex];
-            switch (ev.keyCode){
+            switch (ev.keyCode) {
                 case 37://left arrow key
                     point.x -= moveStep;
                     break;
@@ -39,8 +39,8 @@ function main() {
         }
     });
     // // This part of code is to prevent arrow key scrolling in the window
-    window.addEventListener("keydown", function(e) {
-        if([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+    window.addEventListener("keydown", function (e) {
+        if ([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
             e.preventDefault();
         }
     }, false);
@@ -56,7 +56,7 @@ function createNew() {
     selectedSplineIndex = -1;
     selectedPointIndex = -1;
     reloadSplines();
-    // reloadPoints();
+    reloadPoints();
 }
 
 function loadWord() {
@@ -75,11 +75,11 @@ function loadWord() {
             let bType = document.getElementById("b-spline-type");
             // beType.removeAttribute("checked");
             // bType.removeAttribute("checked");
-            if(currentWord.type === "Bezier") {
+            if (currentWord.type === "Bezier") {
                 beType.checked = true;
                 splineType = 1;
             }
-            else{
+            else {
                 bType.checked = true;
                 splineType = 2;
             }
@@ -142,9 +142,10 @@ function cancelProcess() {
 function addSpline() {
     selectedSplineIndex = currentWord.splines.length;
     currentWord.splines[splineList.options.length] = new Spline();
-    if (splineType === 1) {
-        currentWord.splines[splineList.options.length].points[0] = new Point2D(0, 0);
-    }
+    currentWord.splines[splineList.options.length].points[0] = new Point2D(0, 0);
+    currentWord.splines[splineList.options.length].points[1] = new Point2D(0, 0);
+    currentWord.splines[splineList.options.length].points[2] = new Point2D(0, 0);
+    currentWord.splines[splineList.options.length].points[3] = new Point2D(0, 0);
     splineList.options[splineList.options.length] = new Option("spline no." + splineNum, "spl" + splineNum, false, true);
     splineNum++;
     reloadPoints();
@@ -159,6 +160,20 @@ function removeSpline() {
     }
 }
 
+function setAsBeforeExtension() {
+    let sp = currentWord.splines[selectedSplineIndex];
+    currentWord.backwardLink[0] = sp.points[0];
+    currentWord.backwardLink[1] = sp.points[1];
+    currentWord.backwardLink[2] = sp.points[2];
+}
+
+function setAsAfterExtension() {
+    let sp = currentWord.splines[selectedSplineIndex];
+    currentWord.forwardLink[0] = sp.points[sp.points.length - 3];
+    currentWord.forwardLink[1] = sp.points[sp.points.length - 2];
+    currentWord.forwardLink[2] = sp.points[sp.points.length - 1];
+}
+
 function selectSpline() {
     selectedSplineIndex = splineList.selectedIndex;
     reloadPoints();
@@ -169,10 +184,13 @@ function addPoint() {
     let num = 1;
     if (splineType === 1)
         num = 3;
-    for (i = 0; i < num; i++) {
+    for (let i = 0; i < num; i++) {
         pointList.options[sp.points.length] = new Option("point no." + pointNum, "pn" + pointNum, false, true);
         selectedPointIndex = sp.points.length;
-        sp.points[sp.points.length] = new Point2D(0, 0);
+        if (sp.points.length > 0)
+            sp.points[sp.points.length] = new Point2D(sp.points[sp.points.length - 1].x, sp.points[sp.points.length - 1].y);
+        else
+            sp.points[sp.points.length] = new Point2D(0, 0);
         pointNum++;
     }
     redraw(currentWord, selectedSplineIndex, selectedPointIndex); // we redraw the canvas each time a new point is created
@@ -226,6 +244,8 @@ class Letter {
         this.name = name;
         this.type = type;
         this.splines = [];
+        this.backwardLink = [];
+        this.forwardLink = [];
     }
 }
 

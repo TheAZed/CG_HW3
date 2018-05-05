@@ -3,27 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <title>Create New Letter</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- Popper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
 </head>
 <body onload="main()">
 Spline Type:
 <input type="radio" name="type" value="bezier" id="bezier-type" onchange="changeToBezier()" > <label for="bezier-type"> Bezier</label>
 <input type="radio" name="type" value="b-spline" id="b-spline-type" onchange="changeToB()"> <label for="b-spline-type">B-Spline</label> <br>
-<button id="create-letter-btn" onclick="createNew()">Create New Letter</button><br>
-<label for="edit-letter">Edit a Letter:</label> <input type="file" id="edit-letter" onchange="loadWord()">
+<button id="create-letter-btn" class="btn-default" onclick="createNew()">Create New Letter</button><br>
+<label for="edit-letter">Edit a Letter:</label> <input type="file" id="edit-letter" class="btn-default" onchange="loadWord()">
 <div id="create-div" hidden>
     <label for="letter-name">Letter Name</label><input type="text" id="letter-name">
-    <label for="spline-list">Select a spline to edit</label><select id="spline-list" onchange="selectSpline()"></select>
-    <button id="add-spline-btn" onclick="addSpline()">Add Spline</button>
-    <button id="rem-spline-btn" onclick="removeSpline()">Remove Spline</button>
-    <label for="point-list">Select a point to move</label><select id="point-list" onchange="selectPoint()"></select>
+    <label for="spline-list">Select a spline to edit</label><select id="spline-list" class="btn-default" onchange="selectSpline()"></select>
+    <button id="add-spline-btn" onclick="addSpline()" class="btn-default">Add Spline</button>
+    <button id="rem-spline-btn" onclick="removeSpline()" class="btn-default">Remove Spline</button>
+    <button id="set-before-link" onclick="setAsBeforeExtension()" title="set three first points for extension" class="btn-default">Set as Backward Link</button>
+    <button id="set-after-link" onclick="setAsAfterExtension()" title="set three last points for extension" class="btn-default">Set as Forward Link</button>
+    <label for="point-list">Select a point to move</label><select id="point-list" class="btn-default" onchange="selectPoint()"></select>
     <button id="add-point-btn" onclick="addPoint()">Add Point</button>
     <button id="rem-point-btn" onclick="removePoint()">Remove Point</button><br>
     Note: Click somewhere else after choosing your point(couldn't disable arrow key scrolling in lists)<br>
     <canvas id="webgl" width="400" height="400"></canvas>
 </div>
 <div id="save-cancel" hidden>
-    <button id="save-btn" onclick="saveLetter()">Save</button>
-    <button id="cancel" onclick="cancelProcess()">Cancel</button>
+    <button id="save-btn" class="btn-default" onclick="saveLetter()">Save</button>
+    <button id="cancel" class="btn-default" onclick="cancelProcess()">Cancel</button>
 </div>
 
 <script type="text/javascript" src="../lib/webgl-utils.js"></script>
