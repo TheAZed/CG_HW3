@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Draw points with specified size (Stride)</title>
+  </head>
+
+  <body onload="main(
+    new Float32Array([
+    // Coordinate and size of points
+     0.0,  0.0,  // the 1st point
+     0.5, 0.5,  // the 2nd point
+     1.0, 1.0,   // the 3rd point
+     2.0,  2.0,  // the 1st point
+     2.5, -2.5,  // the 2nd point
+     3.0, -8.0   // the 3rd point
+  ])
+,3000,2.0,0.0,0.0,2.0)">
+    <canvas id="webgl" width="400" height="400">
+    Please use a browser that supports "canvas"
+    </canvas>
+
+    <script src="../lib/webgl-utils.js"></script>
+    <script src="../lib/webgl-debug.js"></script>
+    <script src="../lib/cuon-utils.js"></script>
+    <script src="../lib/cuon-matrix.js"></script>
+    <script src="MultiAttributeSize_Interleaved.js"></script>
+  </body>
+</html>
