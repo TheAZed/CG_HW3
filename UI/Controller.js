@@ -47,16 +47,19 @@ function main() {
 }
 
 function createNew() {
+    let width = document.getElementById('canvas-width').value;
+    let height = document.getElementById('canvas-height').value;
     if (splineType === 1)
-        currentWord = new Letter(document.getElementById("letter-name").value, "Bezier");
+        currentWord = new Letter(document.getElementById("letter-name").value, "Bezier", width, height);
     else
-        currentWord = new Letter(document.getElementById("letter-name").value, "B-Spline");
+        currentWord = new Letter(document.getElementById("letter-name").value, "B-Spline", width, height);
     document.getElementById("save-cancel").removeAttribute("hidden");
     document.getElementById("create-div").removeAttribute("hidden");
     selectedSplineIndex = -1;
     selectedPointIndex = -1;
     reloadSplines();
     reloadPoints();
+    redraw();
 }
 
 function loadWord() {
@@ -73,6 +76,7 @@ function loadWord() {
             document.getElementById("letter-name").value = currentWord.name;
             let beType = document.getElementById("bezier-type");
             let bType = document.getElementById("b-spline-type");
+            let canvas = document.getElementById('webgl');
             // beType.removeAttribute("checked");
             // bType.removeAttribute("checked");
             if (currentWord.type === "Bezier") {
@@ -83,12 +87,27 @@ function loadWord() {
                 bType.checked = true;
                 splineType = 2;
             }
+            canvas.height = currentWord.height;
+            canvas.width = currentWord.width;
             reloadSplines();
             reloadPoints();
         };
         fr.readAsText(input.files[0]);
     }
     // reloadPoints();
+}
+
+function ResizeCanvas() {
+    let width = document.getElementById('canvas-width').value;
+    let height = document.getElementById('canvas-height').value;
+    let canvas = document.getElementById('webgl');
+    canvas.height = height;
+    canvas.width = width;
+    currentWord.height = height;
+    currentWord.width = width;
+    clearCanvas();
+    init();
+    redraw();
 }
 
 function saveLetter() {
@@ -162,16 +181,12 @@ function removeSpline() {
 
 function setAsBeforeExtension() {
     let sp = currentWord.splines[selectedSplineIndex];
-    currentWord.backwardLink[0] = sp.points[0];
-    currentWord.backwardLink[1] = sp.points[1];
-    currentWord.backwardLink[2] = sp.points[2];
+    currentWord.backwardLink = sp.points[0];
 }
 
 function setAsAfterExtension() {
     let sp = currentWord.splines[selectedSplineIndex];
-    currentWord.forwardLink[0] = sp.points[sp.points.length - 3];
-    currentWord.forwardLink[1] = sp.points[sp.points.length - 2];
-    currentWord.forwardLink[2] = sp.points[sp.points.length - 1];
+    currentWord.forwardLink = sp.points[sp.points.length - 1];
 }
 
 function selectSpline() {
@@ -231,21 +246,25 @@ function reloadPoints() {
     pointNum = 0;
     while (pointList.options.length > 0)
         pointList.remove(0);
-    for (let i = 0; i < currentWord.splines[selectedSplineIndex].points.length; i++) {
-        pointList.options[pointList.options.length] = new Option("point no." + pointNum, "pn" + pointNum, false, true);
-        pointNum++;
+    if (currentWord.splines[selectedSplineIndex]) {
+        for (let i = 0; i < currentWord.splines[selectedSplineIndex].points.length; i++) {
+            pointList.options[pointList.options.length] = new Option("point no." + pointNum, "pn" + pointNum, false, true);
+            pointNum++;
+        }
     }
     selectedPointIndex = pointNum - 1;
     redraw(currentWord, selectedSplineIndex, selectedPointIndex);
 }
 
 class Letter {
-    constructor(name, type) {
+    constructor(name, type, width, height) {
         this.name = name;
         this.type = type;
+        this.width = width;
+        this.height = height;
         this.splines = [];
-        this.backwardLink = [];
-        this.forwardLink = [];
+        this.backwardLink = undefined;
+        this.forwardLink = undefined;
     }
 }
 

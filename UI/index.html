@@ -26,13 +26,16 @@ Spline Type:
     <label for="spline-list">Select a spline to edit</label><select id="spline-list" class="btn-default" onchange="selectSpline()"></select>
     <button id="add-spline-btn" onclick="addSpline()" class="btn-default">Add Spline</button>
     <button id="rem-spline-btn" onclick="removeSpline()" class="btn-default">Remove Spline</button>
-    <button id="set-before-link" onclick="setAsBeforeExtension()" title="set three first points for extension" class="btn-default">Set as Backward Link</button>
-    <button id="set-after-link" onclick="setAsAfterExtension()" title="set three last points for extension" class="btn-default">Set as Forward Link</button>
+    <button id="set-before-link" onclick="setAsBeforeExtension()" title="set first point for extension" class="btn-default">Set as Backward Link</button>
+    <button id="set-after-link" onclick="setAsAfterExtension()" title="set last point for extension" class="btn-default">Set as Forward Link</button>
     <label for="point-list">Select a point to move</label><select id="point-list" class="btn-default" onchange="selectPoint()"></select>
     <button id="add-point-btn" onclick="addPoint()">Add Point</button>
     <button id="rem-point-btn" onclick="removePoint()">Remove Point</button><br>
+    <label for="canvas-width">Canvas Width</label><input type="text" id="canvas-width">
+    <label for="canvas-height">Canvas Height</label><input type="text" id="canvas-height">
+    <button id="canvas-resize" onclick="ResizeCanvas()">Resize Canvas</button> <br>
     Note: Click somewhere else after choosing your point(couldn't disable arrow key scrolling in lists)<br>
-    <canvas id="webgl" width="400" height="400"></canvas>
+    <canvas id="webgl" width="200" height="400"></canvas>
 </div>
 <div id="save-cancel" hidden>
     <button id="save-btn" class="btn-default" onclick="saveLetter()">Save</button>
@@ -45,5 +48,6 @@ Spline Type:
 <script type="text/javascript" src="../lib/cuon-matrix.js"></script>
 <script type="text/javascript" src="Controller.js"></script>
 <script type="text/javascript" src="DrawAgent.js"></script>
+<script type="text/javascript" src="../SplineLogic/BezierLogic.js"></script>
 </body>
 </html>
