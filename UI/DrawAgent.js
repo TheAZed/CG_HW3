@@ -129,8 +129,47 @@ function drawBezierSplines(splines, special) {
     }
 }
 
-function drawBSplines() {
 
+
+function drawBSplines(splines, special) {
+    if(splines.length <= 0)
+        return;
+    for(const spline of splines) {
+        let floatArr = [];
+        let controlPoints = [];
+        for (const point of spline.points) {
+            controlPoints.push(point.x, point.y);
+        }
+        Bspline(controlPoints, 100, floatArr);
+        let vertices = new Float32Array(floatArr);
+        let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+        if (a_Position < 0) {
+            alert("Failed to get a_Position");
+            return;
+        }
+        let a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
+        let u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+        let u_Translation = gl.getUniformLocation(gl.program, 'u_Translation');
+        // console.log(floatArr);
+        let vertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+        gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_Position);
+        if (special) {
+            gl.vertexAttrib1f(a_PointSize, 7);
+            gl.uniform4f(u_FragColor, 1, 0.5, 0, 1);
+        } else {
+            gl.vertexAttrib1f(a_PointSize, 5);
+            gl.uniform4f(u_FragColor, 0, 0, 0, 1);
+        }
+        gl.uniform4f(u_Translation, 0, 0, 0, 0);
+
+        gl.drawArrays(gl.LINE_STRIP, 0, floatArr.length/2);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.deleteBuffer(vertexBuffer);
+    }
 }
 
 function clearCanvas() {
