@@ -17,62 +17,76 @@ const vshader_src =
 
 var gl = null;
 var end = 0;
-var startPoint = 0;
-var ends = [3, 5, 7];
+
+let vertexBuffer;
+let vertices;
 
 
-const drawDelay = 2;
+let drawDelay = 10;
+let splinePointArrays;
 
-function viewString(letters, fontSize, canvasWidth, canvasHeight) {
-    init();
+async function viewString(letters, fontSize, canvasWidth, canvasHeight) {
+    end = 0;
     let lastPointX = 1;
     let lastPointY = 0;
     //coefficientX = size / 1000;
-    let offset = 0;
     let outArray = [];
-    let offsets = [];
+    let finalArray = [];
+    splinePointArrays = [];
+    let offsets = [0];
     let starts = [0];
-    ends = [];
+    //spline calling
+    let letterPointCount = 0;
     for (i = 0; i < letters.length; i++) {
-        //spline calling
         let currentLetter = letters[i];
         let letterWidth = currentLetter.width;
         let letterHeight = currentLetter.height;
-        let differenceX = 0;
-        let differenceY = 0;
-        scaleLetter(currentLetter, fontSize * letterWidth / canvasWidth, fontSize * letterHeight / canvasHeight);
-        if (currentLetter.backwardLink) {
-            differenceX = lastPointX - currentLetter.backwardLink.x;
-            differenceY = lastPointY - currentLetter.backwardLink.y;
-        }
+        // let differenceX = 0;
+        // let differenceY = 0;
+        letterPointCount = finalArray.length;
+        moveLetter(currentLetter, lastPointX, lastPointY, canvasWidth, canvasHeight, fontSize);
+        // if (currentLetter.backwardLink) {
+        //     differenceX = lastPointX - currentLetter.backwardLink.x;
+        //     differenceY = lastPointY - currentLetter.backwardLink.y;
+        // }
         if (currentLetter.splines && currentLetter.splines.length > 0) {
             for (j = 0; j < currentLetter.splines.length; j++) {
                 if (currentLetter.splines[j].points && currentLetter.splines[j].points.length > 0) {
                     for (k = 0; k < currentLetter.splines[j].points.length; k++) {
-                        tempArray = [currentLetter.splines[j].points[k].x + differenceX, currentLetter.splines[j].points[k].y + differenceY];
+                        let tempArray = [currentLetter.splines[j].points[k].x, currentLetter.splines[j].points[k].y];
+                        // console.log(currentLetter.splines[j].points[k].x, currentLetter.splines[j].points[k].y);
                         outArray = outArray.concat(tempArray);
                     }
                 }
+                let anotherTempArray = [];
+                bezier(outArray, 100, anotherTempArray);
+                splinePointArrays.push(anotherTempArray);
+                // drawWithAnimation(anotherTempArray);
+                // await (sleep(drawDelay * 100));
+                finalArray = finalArray.concat(anotherTempArray);
+                outArray = [];
             }
         }
         if (currentLetter.forwardLink) {
-            lastPointX = currentLetter.forwardLink.x + differenceX;
-            lastPointY = currentLetter.forwardLink.y + differenceY;
+            lastPointX = currentLetter.forwardLink.x;
+            lastPointY = currentLetter.forwardLink.y;
         } else {
-            lastPointX = lastPointX - fontSize * letterWidth / canvasWidth;
+            if(currentLetter.backwardLink)
+                lastPointX = lastPointX - fontSize * (letterWidth - (letterWidth - currentLetter.backwardLink.x * letterWidth) / 2) / canvasWidth;
+            else
+                lastPointX = lastPointX - fontSize * letterWidth / canvasWidth;
             lastPointY = 0;
         }
-        offsets = offsets.concat([outArray.length * drawDelay]);
-        starts = starts.concat([outArray.length]);
-        ends = ends.concat([outArray.length])
+        offsets = offsets.concat([(finalArray.length - letterPointCount) * drawDelay]);
+        starts = starts.concat([finalArray.length - letterPointCount]);
     }
-    console.log(outArray);
+    // console.log(finalArray);
+    console.log(finalArray.length);
 
-    let vertices = new Float32Array(outArray);
-    const vertexBuffer = gl.createBuffer();
+    vertices = new Float32Array(finalArray);
+    vertexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-
     const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
     if (a_Position < 0) {
         alert("Failed to get a_Position");
@@ -82,6 +96,58 @@ function viewString(letters, fontSize, canvasWidth, canvasHeight) {
     const u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
     const u_Translation = gl.getUniformLocation(gl.program, 'u_Translation');
 
+
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(a_Position);
+
+    // gl.vertexAttrib1f(a_PointSize, 10);
+    gl.uniform4f(u_FragColor, 0, 0, 0, 1);
+
+    gl.uniform4f(u_Translation, 0, 0, 0, 0);
+
+
+    for(let i = 0; i < finalArray.length / 2  - splinePointArrays.length; i++){
+        setTimeout(tick, i * drawDelay);
+    }
+}
+
+// const vertices = new Float32Array([
+function tick() {
+//     0, 0.5, -0.5, -0.5, 0.5, -0.5, 0.3, 0.4, 0.1, 0.3, -0.1, 0.4, -0.3, 0.1
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    end = end + 1;
+    let temp = end;
+    for(let i = 0; i < splinePointArrays.length; i++){
+        if(temp <= 0)
+            break;
+
+        if(temp > splinePointArrays[i].length / 2)
+            gl.drawArrays(gl.LINE_STRIP, end - temp, splinePointArrays[i].length / 2);
+        else
+            gl.drawArrays(gl.LINE_STRIP, end - temp, temp);
+
+        temp -= splinePointArrays[i].length / 2;
+    }
+
+    // gl.drawArrays(gl.LINE_STRIP, end - 1, 2);
+}
+
+async function drawWithAnimation(vertexArray) {
+    let index = 0;
+    vertices = new Float32Array(vertexArray);
+    vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+    if (a_Position < 0) {
+        alert("Failed to get a_Position");
+        return;
+    }
+    const a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
+    const u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+    const u_Translation = gl.getUniformLocation(gl.program, 'u_Translation');
+
+
     gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(a_Position);
 
@@ -89,42 +155,48 @@ function viewString(letters, fontSize, canvasWidth, canvasHeight) {
     gl.uniform4f(u_FragColor, 1, 1, 1, 1);
 
     gl.uniform4f(u_Translation, 0, 0, 0, 0);
-
-    gl.clearColor(0.1, 0.1, 0.1, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    for (i = 0; i < letters.length; i++) {
-        drawOneWordFromOutside(outArray, offsets[i]);
-        //offset += 20 * outArray.length/2; // time = 20
+    for(; index < vertexArray.length / 2 - 1; index++){
+        gl.drawArrays(gl.LINE_STRIP, index, 2);
+        await sleep(drawDelay);
     }
 
 }
 
-function scaleLetter(letter, xScale, yScale) {
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function moveLetter(letter, lastPointX, lastPointY, canvasWidth, canvasHeight, fontSize) {
+    let xDiff, yDiff;
+    let lastX = canvasWidth * lastPointX, lastY = canvasHeight * lastPointY;
+    if (letter.backwardLink) {
+        xDiff = lastX - letter.backwardLink.x * fontSize * letter.width;
+        yDiff = lastY - letter.backwardLink.y * fontSize * letter.height;
+        letter.backwardLink.x = lastPointX;
+        letter.backwardLink.y = lastPointY;
+    }else {
+        xDiff = lastX - (1) * fontSize * letter.width;
+        yDiff = 0;
+    }
+    if (letter.forwardLink) {
+        letter.forwardLink.x = (letter.forwardLink.x * fontSize * letter.width + xDiff) / canvasWidth;
+        letter.forwardLink.y = (letter.forwardLink.y * fontSize * letter.height + yDiff) / canvasHeight;
+    }
     if (letter.splines) {
         for (let i = 0; i < letter.splines.length; i++) {
             let spline = letter.splines[i];
             if (spline.points) {
                 for (let j = 0; j < spline.points.length; j++) {
                     let point = spline.points[j];
-                    point.x *= xScale;
-                    point.y *= yScale;
+                    point.x = (point.x * fontSize * letter.width + xDiff) / canvasWidth;
+                    point.y = (point.y * fontSize * letter.height + yDiff) / canvasHeight;
                 }
             }
         }
     }
-    if (letter.backwardLink) {
-        letter.backwardLink.x *= xScale;
-        letter.backwardLink.y *= yScale;
-    }
-    if (letter.forwardLink) {
-        letter.forwardLink.x *= xScale;
-        letter.forwardLink.y *= yScale;
-    }
 
 }
 
-// const vertices = new Float32Array([
-//     0, 0.5, -0.5, -0.5, 0.5, -0.5, 0.3, 0.4, 0.1, 0.3, -0.1, 0.4, -0.3, 0.1
 // ]);
 let isEnd = 0;
 
@@ -132,27 +204,8 @@ function setIsEnd() {
     isEnd = 1;
 }
 
-function tick() {
-    //gl.clear(gl.COLOR_BUFFER_BIT);
-    end = end + 1;
-    gl.drawArrays(gl.LINE_STRIP, end - 1, 2);
-    if (isEnd === 1) {
-        end++;
-        //gl.bindBuffer(gl.ARRAY_BUFFER, null);
-        //gl.deleteBuffer(vertexBuffer);
-        isEnd = 0;
-    }
-}
-
-// function drawWords(){
-// 		first = 0;
-// 		for (i = 0 ; i < ends.length - 1; i++){
-// 			gl.drawArrays(gl.LINE_STRIP, first, ends[i]);
-// 			first = ends[i]
-// 		}
-// }
 function drawOneWordFromOutside(points, offset) {
-
+    // console.log(offset);
     //gl.drawArrays(gl.LINE_STRIP, 0, points.length/2);
     //end = start + 1;
     let i = 1;
@@ -182,6 +235,8 @@ function init() {
         return;
     }
 
+    gl.clearColor(0.9, 0.9, 0.9, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
 }
 
 
@@ -199,10 +254,11 @@ function loadPossibleBackLetter() {
     if (alphabet[alphabetIndex].backLetterLink) {
         const fr2 = new FileReader();
         fr2.onload = function (ev) {
-            alphabet[alphabetIndex].backLetterJSON = JSON.parse(ev.target.result);
+            alphabet[alphabetIndex].backLetterJSON = ev.target.result;
             loadPossibleMiddleLetter();
         };
-        fr2.readAsText(files[getFileIndex(alphabet[alphabetIndex].backLetterLink)]);
+        let file = files[getFileIndex(alphabet[alphabetIndex].backLetterLink)];
+        fr2.readAsText(file);
     }else
         loadPossibleMiddleLetter();
 }
@@ -211,10 +267,11 @@ function loadPossibleMiddleLetter() {
     if (alphabet[alphabetIndex].middleLetterLink) {
         const fr3 = new FileReader();
         fr3.onload = function (ev) {
-            alphabet[alphabetIndex].middleLetterJSON = JSON.parse(ev.target.result);
+            alphabet[alphabetIndex].middleLetterJSON = ev.target.result;
             loadPossibleFrontLetter();
         };
-        fr3.readAsText(files[getFileIndex(alphabet[alphabetIndex].middleLetterLink)]);
+        let file = files[getFileIndex(alphabet[alphabetIndex].middleLetterLink)];
+        fr3.readAsText(file);
     }else
         loadPossibleFrontLetter();
 }
@@ -223,10 +280,11 @@ function loadPossibleFrontLetter() {
     if (alphabet[alphabetIndex].frontLetterLink) {
         const fr4 = new FileReader();
         fr4.onload = function (ev) {
-            alphabet[alphabetIndex].frontLetterJSON = JSON.parse(ev.target.result);
+            alphabet[alphabetIndex].frontLetterJSON = ev.target.result;
             loadNormalLetter();
         };
-        fr4.readAsText(files[getFileIndex(alphabet[alphabetIndex].frontLetterLink)]);
+        let file = files[getFileIndex(alphabet[alphabetIndex].frontLetterLink)];
+        fr4.readAsText(file);
     }else
         loadNormalLetter();
 }
@@ -237,19 +295,22 @@ function loadNormalLetter() {
         return;
     const fr1 = new FileReader();
     fr1.onload = function (ev) {
-        alphabet[alphabetIndex].normalLetterJSON = JSON.parse(ev.target.result);
+        alphabet[alphabetIndex].normalLetterJSON = ev.target.result;
         loadPossibleBackLetter();
     };
-    fr1.readAsText(files[getFileIndex(alphabet[alphabetIndex].normalLetterLink)]);
+    let file = files[getFileIndex(alphabet[alphabetIndex].normalLetterLink)];
+    // console.log(file);
+    fr1.readAsText(file);
 }
 
-function getFileIndex(files, name) {
+function getFileIndex(name) {
     for (let i = 0; i < files.length; i++) {
-        console.log(files[i].name);
         if (files[i].name === name) {
+            // console.log(files[i] , name, i);
             return i;
         }
     }
+    console.log("failed to find: " , name);
     return -1;
 }
 
@@ -274,26 +335,27 @@ function parseString() {
         }
         alphabetLetters.push(findInAlphabet(string.charCodeAt(i)));
     }//todo make sure it works fine
-    console.log(alphabetLetters);
+    // console.log(alphabetLetters);
     for (let i = 0; i < alphabetLetters.length; i++) {
         if (i === 0 || !alphabetLetters[i - 1].forwardLink || !alphabetLetters[i].backwardLink) {
-            console.log("Not backward");
+            // console.log("Not backward");
             if (i === alphabetLetters.length - 1 || !alphabetLetters[i + 1].backwardLink || !alphabetLetters[i].forwardLink) {
-                console.log("Not Forward");
-                letters.push(alphabetLetters[i].normalLetterJSON);
+                // console.log("Not Forward");
+                letters.push(JSON.parse(alphabetLetters[i].normalLetterJSON));
             } else {
-                letters.push(alphabetLetters[i].frontLetterJSON);
+                letters.push(JSON.parse(alphabetLetters[i].frontLetterJSON));
             }
         } else {
-            console.log("backward");
+            // console.log("backward");
             if (i === alphabetLetters.length - 1 || !alphabetLetters[i + 1].backwardLink || !alphabetLetters[i].forwardLink) {
-                letters.push(alphabetLetters[i].middleLetterJSON);
+                letters.push(JSON.parse(alphabetLetters[i].backLetterJSON));
             } else {
-                letters.push(alphabetLetters[i].backLetterJSON);
+                console.log(alphabetLetters[i].middleLetterJSON);
+                letters.push(JSON.parse(alphabetLetters[i].middleLetterJSON));
             }
         }
     }
-    console.log(letters);
+    // console.log(letters);
     let canvas = document.getElementById("webgl");
     let fontSize = document.getElementById("font-size").value;
     viewString(letters, fontSize, canvas.width, canvas.height);
@@ -315,9 +377,9 @@ const vaav = {
     code: 1608,
     backwardLink: true,
     forwardLink: false,
-    normalLetterLink: "Vav-Joda.let",
+    normalLetterLink: "Vav-Chasban-Enteha.let",
     normalLetterJSON: "",
-    backLetterLink: "Vav-Chasban-Enteha.let",
+    backLetterLink: "Vav-Joda.let",
     backLetterJSON: ""
 };
 
