@@ -88,7 +88,7 @@ function drawPoints(points, special) {
     gl.deleteBuffer(vertexBuffer);
 }
 
-function drawSplines(splines, special) {
+function drawBezierSplines(splines, special) {
     if(splines.length <= 0)
         return;
     for(const spline of splines) {
@@ -129,6 +129,10 @@ function drawSplines(splines, special) {
     }
 }
 
+function drawBSplines() {
+
+}
+
 function clearCanvas() {
     gl.clearColor(0.8, 0.8, 0.8, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -145,10 +149,17 @@ function redraw(currentWord, selectedSplineIndex, selectedPointIndex) {
     let selectedPoint = [currentWord.splines[selectedSplineIndex].points[selectedPointIndex]];
     // todo after adding spline logic uncomment this part
     loadShaders(2); // first load spline shaders
-    if(splines.length > 0)
-        drawSplines(splines, false); // draw normal splines
-    if(splines[selectedSplineIndex])
-        drawSplines(selectedSpline, true); // draw the selected spline
+    if(currentWord.type === "Bezier") {
+        if (splines.length > 0)
+            drawBezierSplines(splines, false); // draw normal splines
+        if (splines[selectedSplineIndex])
+            drawBezierSplines(selectedSpline, true); // draw the selected spline
+    }else{
+        if (splines.length > 0)
+            drawBSplines(splines, false); // draw normal splines
+        if (splines[selectedSplineIndex])
+            drawBSplines(selectedSpline, true); // draw the selected spline
+    }
     loadShaders(1); // now load point shaders
     if (points.length > 0)
         drawPoints(points, false); // draw normal points
