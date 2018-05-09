@@ -15,13 +15,99 @@ const vshader_src =
     }';
 
 
+const daal = {
+    code: 1583,
+    backwardLink: true,
+    forwardLink: false,
+    normalLetterLink: "../letters/Daal-Joda.let", //link to isolated form of letter
+    normalLetterJSON: "",
+    backLetterLink: "../letters/Daal-Chasban-Enteha.let",//link to back form of letter
+    backLetterJSON: ""
+};
+
+const vaav = {
+    code: 1608,
+    backwardLink: true,
+    forwardLink: false,
+    normalLetterLink: "../letters/Vav-Chasban-Enteha.let",
+    normalLetterJSON: "",
+    backLetterLink: "../letters/Vav-Joda.let",
+    backLetterJSON: ""
+};
+
+const space = {
+    code: 32,
+    backwardLink: false,
+    forwardLink: false,
+    normalLetterLink: "../letters/Space.let",
+    normalLetterJSON: ""
+};
+
+const kaaf = {
+    code: 1705,
+    backwardLink: true,
+    forwardLink: true,
+    normalLetterLink: "../letters/Kaaf-Joda.let",
+    normalLetterJSON: "",
+    backLetterLink: "../letters/Kaaf-Chasban-Enteha.let",
+    backLetterJSON: "",
+    middleLetterLink: "../letters/Kaaf-Chasban-Vasat.let",//link to middle form of letter
+    middleLetterJSON: "",
+    frontLetterLink: "../letters/Kaaf-Chasban-Aval.let", //link to front form of letter
+    frontLetterJSON: ""
+};
+
+const laam = {
+    code: 1604,
+    backwardLink: true,
+    forwardLink: true,
+    normalLetterLink: "../letters/L-Joda.let",
+    normalLetterJSON: "",
+    backLetterLink: "../letters/L-Chasban-Enteha.let",
+    backLetterJSON: "",
+    middleLetterLink: "../letters/L-Chasban-Vasat.let",
+    middleLetterJSON: "",
+    frontLetterLink: "../letters/L-Chasban-Aval.let",
+    frontLetterJSON: ""
+};
+
+const mim = {
+    code: 1605,
+    backwardLink: true,
+    forwardLink: true,
+    normalLetterLink: "../letters/mim-Joda.let",
+    normalLetterJSON: "",
+    backLetterLink: "../letters/mim-Chasban-Enteha.let",
+    backLetterJSON: "",
+    middleLetterLink: "../letters/mim-Chasban-Vasat.let",
+    middleLetterJSON: "",
+    frontLetterLink: "../letters/mim-Chasban-Aval.let",
+    frontLetterJSON: ""
+};
+
+const heh = {
+    code: 1607,
+    backwardLink: true,
+    forwardLink: true,
+    normalLetterLink: "../letters/H-Joda.let",
+    normalLetterJSON: "",
+    backLetterLink: "../letters/H-Chasban-Enteha.let",
+    backLetterJSON: "",
+    middleLetterLink: "../letters/H-Chasban-Vasat.let",
+    middleLetterJSON: "",
+    frontLetterLink: "../letters/H-Aval.let",
+    frontLetterJSON: ""
+};
+
+const alphabet = [daal, vaav, space, kaaf, laam, mim, heh];
+
 var gl = null;
 var end = 0;
 
 let vertexBuffer;
 let vertices;
 
-
+let finalArray = [];
 let drawDelay = 10;
 let splinePointArrays;
 
@@ -31,7 +117,7 @@ async function viewString(letters, fontSize, canvasWidth, canvasHeight) {
     let lastPointY = 0;
     //coefficientX = size / 1000;
     let outArray = [];
-    let finalArray = [];
+    finalArray = [];
     splinePointArrays = [];
     let offsets = [0];
     let starts = [0];
@@ -71,9 +157,9 @@ async function viewString(letters, fontSize, canvasWidth, canvasHeight) {
             lastPointX = currentLetter.forwardLink.x;
             lastPointY = currentLetter.forwardLink.y;
         } else {
-            if(currentLetter.backwardLink)
-                lastPointX = lastPointX - fontSize * (letterWidth - (letterWidth - currentLetter.backwardLink.x * letterWidth) / 2) / canvasWidth;
-            else
+            // if(currentLetter.backwardLink)
+            //     lastPointX = lastPointX - fontSize * (letterWidth - (letterWidth - currentLetter.backwardLink.x * letterWidth) / 2) / canvasWidth;
+            // else
                 lastPointX = lastPointX - fontSize * letterWidth / canvasWidth;
             lastPointY = 0;
         }
@@ -106,14 +192,20 @@ async function viewString(letters, fontSize, canvasWidth, canvasHeight) {
     gl.uniform4f(u_Translation, 0, 0, 0, 0);
 
 
-    for(let i = 0; i < finalArray.length / 2  - splinePointArrays.length; i++){
-        setTimeout(tick, i * drawDelay);
-    }
+        for(let i = 0; i < finalArray.length / 2  - 1; i++){
+            setTimeout(tick, i * drawDelay);
+        }
 }
-
+let currentFrame = 0;
 // const vertices = new Float32Array([
 function tick() {
 //     0, 0.5, -0.5, -0.5, 0.5, -0.5, 0.3, 0.4, 0.1, 0.3, -0.1, 0.4, -0.3, 0.1
+    currentFrame++;
+    if (currentFrame > drawDelay)
+        requestAnimationFrame(tick);
+    currentFrame = 0;
+    if(end >= finalArray.length / 2 - 1)
+        return;
     gl.clear(gl.COLOR_BUFFER_BIT);
     end = end + 1;
     let temp = end;
@@ -129,42 +221,43 @@ function tick() {
         temp -= splinePointArrays[i].length / 2;
     }
 
+    gl.requestAnimationFrame(tick);
     // gl.drawArrays(gl.LINE_STRIP, end - 1, 2);
 }
 
-async function drawWithAnimation(vertexArray) {
-    let index = 0;
-    vertices = new Float32Array(vertexArray);
-    vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-    const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-    if (a_Position < 0) {
-        alert("Failed to get a_Position");
-        return;
-    }
-    const a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
-    const u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
-    const u_Translation = gl.getUniformLocation(gl.program, 'u_Translation');
+// async function drawWithAnimation(vertexArray) {
+//     let index = 0;
+//     vertices = new Float32Array(vertexArray);
+//     vertexBuffer = gl.createBuffer();
+//     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+//     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+//     const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
+//     if (a_Position < 0) {
+//         alert("Failed to get a_Position");
+//         return;
+//     }
+//     const a_PointSize = gl.getAttribLocation(gl.program, 'a_PointSize');
+//     const u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+//     const u_Translation = gl.getUniformLocation(gl.program, 'u_Translation');
+//
+//
+//     gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+//     gl.enableVertexAttribArray(a_Position);
+//
+//     // gl.vertexAttrib1f(a_PointSize, 10);
+//     gl.uniform4f(u_FragColor, 1, 1, 1, 1);
+//
+//     gl.uniform4f(u_Translation, 0, 0, 0, 0);
+//     for(; index < vertexArray.length / 2 - 1; index++){
+//         gl.drawArrays(gl.LINE_STRIP, index, 2);
+//         await sleep(drawDelay);
+//     }
+//
+// }
 
-
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_Position);
-
-    // gl.vertexAttrib1f(a_PointSize, 10);
-    gl.uniform4f(u_FragColor, 1, 1, 1, 1);
-
-    gl.uniform4f(u_Translation, 0, 0, 0, 0);
-    for(; index < vertexArray.length / 2 - 1; index++){
-        gl.drawArrays(gl.LINE_STRIP, index, 2);
-        await sleep(drawDelay);
-    }
-
-}
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+// function sleep(ms) {
+//     return new Promise(resolve => setTimeout(resolve, ms));
+// }
 
 function moveLetter(letter, lastPointX, lastPointY, canvasWidth, canvasHeight, fontSize) {
     let xDiff, yDiff;
@@ -244,47 +337,109 @@ function main() {
     document.getElementById("font-size").value = 1;
     init();
     loadNormalLetter();
+    // loadJSONs();
 }
 
-const files = document.getElementById("font-files").files;
+// const files = document.getElementById("font-files").files;
 
 let alphabetIndex = -1;
 
+function loadJSONs() {
+    for(let i = 0; i < alphabet.length; i++){
+        let letter = alphabet[i];
+        letter.normalLetterJSON = readFileAsText(letter.normalLetterLink);
+        if(letter.backLetterLink)
+            letter.backLetterJSON = readFileAsText(letter.backLetterLink);
+        if(letter.frontLetterLink)
+            letter.frontLetterJSON = readFileAsText(letter.frontLetterLink);
+        if(letter.middleLetterLink)
+            letter.middleLetterJSON = readFileAsText(letter.middleLetterJSON);
+    }
+}
+
+function readFileAsText(link) {
+    let fileText;
+    let rawFile = new XMLHttpRequest();
+    rawFile.open("GET", link, false);
+    rawFile.onreadystatechange = function () {
+        if(rawFile.readyState === 4){
+            if(rawFile.status === 200 || rawFile.status === 0){
+                fileText = rawFile.responseText;
+            }
+        }
+    };
+    rawFile.send(null);
+    return fileText;
+}
+
 function loadPossibleBackLetter() {
     if (alphabet[alphabetIndex].backLetterLink) {
-        const fr2 = new FileReader();
-        fr2.onload = function (ev) {
-            alphabet[alphabetIndex].backLetterJSON = ev.target.result;
-            loadPossibleMiddleLetter();
+        let rawFile = new XMLHttpRequest();
+        rawFile.open("GET", alphabet[alphabetIndex].backLetterLink, false);
+        rawFile.onreadystatechange = function () {
+            if(rawFile.readyState === 4){
+                if(rawFile.status === 200 || rawFile.status === 0){
+                    alphabet[alphabetIndex].backLetterJSON = rawFile.responseText;
+                    loadPossibleMiddleLetter();
+                }
+            }
         };
-        let file = files[getFileIndex(alphabet[alphabetIndex].backLetterLink)];
-        fr2.readAsText(file);
+        rawFile.send(null);
+// const fr2 = new FileReader();
+        // fr2.onload = function (ev) {
+        //     alphabet[alphabetIndex].backLetterJSON = ev.target.result;
+        //     loadPossibleMiddleLetter();
+        // };
+        // let file = files[getFileIndex(alphabet[alphabetIndex].backLetterLink)];
+        // fr2.readAsText(file);
     }else
         loadPossibleMiddleLetter();
 }
 
 function loadPossibleMiddleLetter() {
     if (alphabet[alphabetIndex].middleLetterLink) {
-        const fr3 = new FileReader();
-        fr3.onload = function (ev) {
-            alphabet[alphabetIndex].middleLetterJSON = ev.target.result;
-            loadPossibleFrontLetter();
+        let rawFile = new XMLHttpRequest();
+        rawFile.open("GET", alphabet[alphabetIndex].middleLetterLink, false);
+        rawFile.onreadystatechange = function () {
+            if(rawFile.readyState === 4){
+                if(rawFile.status === 200 || rawFile.status === 0){
+                    alphabet[alphabetIndex].middleLetterJSON = rawFile.responseText;
+                    loadPossibleFrontLetter();
+                }
+            }
         };
-        let file = files[getFileIndex(alphabet[alphabetIndex].middleLetterLink)];
-        fr3.readAsText(file);
+        rawFile.send(null);
+// const fr3 = new FileReader();
+        // fr3.onload = function (ev) {
+        //     alphabet[alphabetIndex].middleLetterJSON = ev.target.result;
+        //     loadPossibleFrontLetter();
+        // };
+        // let file = files[getFileIndex(alphabet[alphabetIndex].middleLetterLink)];
+        // fr3.readAsText(file);
     }else
         loadPossibleFrontLetter();
 }
 
 function loadPossibleFrontLetter() {
     if (alphabet[alphabetIndex].frontLetterLink) {
-        const fr4 = new FileReader();
-        fr4.onload = function (ev) {
-            alphabet[alphabetIndex].frontLetterJSON = ev.target.result;
-            loadNormalLetter();
+        let rawFile = new XMLHttpRequest();
+        rawFile.open("GET", alphabet[alphabetIndex].frontLetterLink, false);
+        rawFile.onreadystatechange = function () {
+            if(rawFile.readyState === 4){
+                if(rawFile.status === 200 || rawFile.status === 0){
+                    alphabet[alphabetIndex].frontLetterJSON = rawFile.responseText;
+                    loadNormalLetter();
+                }
+            }
         };
-        let file = files[getFileIndex(alphabet[alphabetIndex].frontLetterLink)];
-        fr4.readAsText(file);
+        rawFile.send(null);
+        // const fr4 = new FileReader();
+        // fr4.onload = function (ev) {
+        //     alphabet[alphabetIndex].frontLetterJSON = ev.target.result;
+        //     loadNormalLetter();
+        // };
+        // let file = files[getFileIndex(alphabet[alphabetIndex].frontLetterLink)];
+        // fr4.readAsText(file);
     }else
         loadNormalLetter();
 }
@@ -293,14 +448,25 @@ function loadNormalLetter() {
     alphabetIndex++;
     if(alphabetIndex >= alphabet.length)
         return;
-    const fr1 = new FileReader();
-    fr1.onload = function (ev) {
-        alphabet[alphabetIndex].normalLetterJSON = ev.target.result;
-        loadPossibleBackLetter();
+    let rawFile = new XMLHttpRequest();
+    rawFile.open("GET", alphabet[alphabetIndex].normalLetterLink, false);
+    rawFile.onreadystatechange = function () {
+        if(rawFile.readyState === 4){
+            if(rawFile.status === 200 || rawFile.status === 0){
+                alphabet[alphabetIndex].normalLetterJSON = rawFile.responseText;
+                loadPossibleBackLetter();
+            }
+        }
     };
-    let file = files[getFileIndex(alphabet[alphabetIndex].normalLetterLink)];
-    // console.log(file);
-    fr1.readAsText(file);
+    rawFile.send(null);
+    // const fr1 = new FileReader();
+    // fr1.onload = function (ev) {
+    //     alphabet[alphabetIndex].normalLetterJSON = ev.target.result;
+    //     loadPossibleBackLetter();
+    // };
+    // let file = files[getFileIndex(alphabet[alphabetIndex].normalLetterLink)];
+    // // console.log(file);
+    // fr1.readAsText(file);
 }
 
 function getFileIndex(name) {
@@ -350,10 +516,11 @@ function parseString() {
             if (i === alphabetLetters.length - 1 || !alphabetLetters[i + 1].backwardLink || !alphabetLetters[i].forwardLink) {
                 letters.push(JSON.parse(alphabetLetters[i].backLetterJSON));
             } else {
-                console.log(alphabetLetters[i].middleLetterJSON);
                 letters.push(JSON.parse(alphabetLetters[i].middleLetterJSON));
             }
         }
+        console.log("loaded:" , alphabetLetters[i].normalLetterLink);
+
     }
     // console.log(letters);
     let canvas = document.getElementById("webgl");
@@ -362,89 +529,3 @@ function parseString() {
 }
 
 
-//todo fill the links
-const daal = {
-    code: 1583,
-    backwardLink: true,
-    forwardLink: false,
-    normalLetterLink: "Daal-Joda.let", //link to isolated form of letter
-    normalLetterJSON: "",
-    backLetterLink: "Daal-Chasban-Enteha.let",//link to back form of letter
-    backLetterJSON: ""
-};
-
-const vaav = {
-    code: 1608,
-    backwardLink: true,
-    forwardLink: false,
-    normalLetterLink: "Vav-Chasban-Enteha.let",
-    normalLetterJSON: "",
-    backLetterLink: "Vav-Joda.let",
-    backLetterJSON: ""
-};
-
-const space = {
-    code: 32,
-    backwardLink: false,
-    forwardLink: false,
-    normalLetterLink: "Space.let",
-    normalLetterJSON: ""
-};
-
-const kaaf = {
-    code: 1705,
-    backwardLink: true,
-    forwardLink: true,
-    normalLetterLink: "Kaaf-Joda.let",
-    normalLetterJSON: "",
-    backLetterLink: "Kaaf-Chasban-Enteha.let",
-    backLetterJSON: "",
-    middleLetterLink: "Kaaf-Chasban-Vasat.let",//link to middle form of letter
-    middleLetterJSON: "",
-    frontLetterLink: "Kaaf-Chasban-Aval.let", //link to front form of letter
-    frontLetterJSON: ""
-};
-
-const laam = {
-    code: 1604,
-    backwardLink: true,
-    forwardLink: true,
-    normalLetterLink: "L-Joda.let",
-    normalLetterJSON: "",
-    backLetterLink: "L-Chasban-Enteha.let",
-    backLetterJSON: "",
-    middleLetterLink: "L-Chasban-Vasat.let",
-    middleLetterJSON: "",
-    frontLetterLink: "L-Chasban-Aval.let",
-    frontLetterJSON: ""
-};
-
-const mim = {
-    code: 1605,
-    backwardLink: true,
-    forwardLink: true,
-    normalLetterLink: "mim-Joda.let",
-    normalLetterJSON: "",
-    backLetterLink: "mim-Chasban-Enteha.let",
-    backLetterJSON: "",
-    middleLetterLink: "mim-Chasban-Vasat.let",
-    middleLetterJSON: "",
-    frontLetterLink: "mim-Chasban-Aval.let",
-    frontLetterJSON: ""
-};
-
-const heh = {
-    code: 1607,
-    backwardLink: true,
-    forwardLink: true,
-    normalLetterLink: "H-Joda.let",
-    normalLetterJSON: "",
-    backLetterLink: "H-Chasban-Enteha.let",
-    backLetterJSON: "",
-    middleLetterLink: "H-Chasban-Vasat.let",
-    middleLetterJSON: "",
-    frontLetterLink: "H-Aval.let",
-    frontLetterJSON: ""
-};
-
-const alphabet = [daal, vaav, space, kaaf, laam, mim, heh];

@@ -4,11 +4,11 @@
    <meta charset="UTF-8"/>
    <title>MultiPoint</title>
 </head>
-<body>
+<body onload="main()">
     <label for="input-str">Input String</label><input type="text" id="input-str">
     <label for="font-size">Font Size</label><input type="text" id="font-size">
     <button id="parse" onclick="parseString()">Show String</button><br>
-    <input type="file" id="font-files" multiple onchange="main()">
+    <!--<input type="file" id="font-files" multiple onchange="main()">-->
     <canvas id="webgl" width="1000" height="400"></canvas>
     <script type="text/javascript" src="../lib/webgl-utils.js"></script>
     <script type="text/javascript" src="../lib/webgl-debug.js"></script>
